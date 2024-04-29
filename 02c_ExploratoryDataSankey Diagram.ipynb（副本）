@@ -1,0 +1,2488 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Sankey Diagram"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Before running this code, please make sure you have the following external libraries installed: plotly, numpy, pandas. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "        <script type=\"text/javascript\">\n",
+       "        window.PlotlyConfig = {MathJaxConfig: 'local'};\n",
+       "        if (window.MathJax) {MathJax.Hub.Config({SVG: {font: \"STIX-Web\"}});}\n",
+       "        if (typeof require !== 'undefined') {\n",
+       "        require.undef(\"plotly\");\n",
+       "        requirejs.config({\n",
+       "            paths: {\n",
+       "                'plotly': ['https://cdn.plot.ly/plotly-latest.min']\n",
+       "            }\n",
+       "        });\n",
+       "        require(['plotly'], function(Plotly) {\n",
+       "            window._Plotly = Plotly;\n",
+       "        });\n",
+       "        }\n",
+       "        </script>\n",
+       "        "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "#import necessary libraries from plotly\n",
+    "import plotly.graph_objects as go\n",
+    "from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot\n",
+    "init_notebook_mode(connected=True)\n",
+    "\n",
+    "#import pandas and numpy for easy access\n",
+    "import pandas as pd\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Exploratory Data Analysis"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#create dataframe to read data\n",
+    "\n",
+    "df = pd.read_csv('data0609nyc2.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>id</th>\n",
+       "      <th>tpep_pickup_datetime</th>\n",
+       "      <th>tpep_dropoff_datetime</th>\n",
+       "      <th>passenger_count</th>\n",
+       "      <th>trip_distance</th>\n",
+       "      <th>pickup_longitude</th>\n",
+       "      <th>pickup_latitude</th>\n",
+       "      <th>dropoff_longitude</th>\n",
+       "      <th>dropoff_latitude</th>\n",
+       "      <th>...</th>\n",
+       "      <th>pickup_hour</th>\n",
+       "      <th>dropoff_hour</th>\n",
+       "      <th>pickup_index_right</th>\n",
+       "      <th>pickup_zone</th>\n",
+       "      <th>pickup_LocationID</th>\n",
+       "      <th>pickup_borough</th>\n",
+       "      <th>dropoff_index_right</th>\n",
+       "      <th>dropoff_zone</th>\n",
+       "      <th>dropoff_LocationID</th>\n",
+       "      <th>dropoff_borough</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5.22</td>\n",
+       "      <td>-73.981720</td>\n",
+       "      <td>40.736668</td>\n",
+       "      <td>-73.981636</td>\n",
+       "      <td>40.670242</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>179.0</td>\n",
+       "      <td>Park Slope</td>\n",
+       "      <td>181.0</td>\n",
+       "      <td>Brooklyn</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>50</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3.30</td>\n",
+       "      <td>-73.988739</td>\n",
+       "      <td>40.736511</td>\n",
+       "      <td>-73.959511</td>\n",
+       "      <td>40.776134</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>234.0</td>\n",
+       "      <td>Upper East Side North</td>\n",
+       "      <td>236.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>78</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.48</td>\n",
+       "      <td>-73.988640</td>\n",
+       "      <td>40.733940</td>\n",
+       "      <td>-74.008301</td>\n",
+       "      <td>40.736279</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>Meatpacking/West Village West</td>\n",
+       "      <td>158.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>83</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3.64</td>\n",
+       "      <td>-73.985786</td>\n",
+       "      <td>40.738289</td>\n",
+       "      <td>-74.012650</td>\n",
+       "      <td>40.716217</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>229.0</td>\n",
+       "      <td>TriBeCa/Civic Center</td>\n",
+       "      <td>231.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>109</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>5</td>\n",
+       "      <td>3.45</td>\n",
+       "      <td>-73.984528</td>\n",
+       "      <td>40.736660</td>\n",
+       "      <td>-73.952919</td>\n",
+       "      <td>40.780170</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>261.0</td>\n",
+       "      <td>Yorkville West</td>\n",
+       "      <td>263.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 25 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0   id tpep_pickup_datetime tpep_dropoff_datetime  \\\n",
+       "0           0    0             9/6/2016              9/6/2016   \n",
+       "1           1   50             9/6/2016              9/6/2016   \n",
+       "2           2   78             9/6/2016              9/6/2016   \n",
+       "3           3   83             9/6/2016              9/6/2016   \n",
+       "4           4  109             9/6/2016              9/6/2016   \n",
+       "\n",
+       "   passenger_count  trip_distance  pickup_longitude  pickup_latitude  \\\n",
+       "0                1           5.22        -73.981720        40.736668   \n",
+       "1                1           3.30        -73.988739        40.736511   \n",
+       "2                1           1.48        -73.988640        40.733940   \n",
+       "3                1           3.64        -73.985786        40.738289   \n",
+       "4                5           3.45        -73.984528        40.736660   \n",
+       "\n",
+       "   dropoff_longitude  dropoff_latitude  ...  pickup_hour dropoff_hour  \\\n",
+       "0         -73.981636         40.670242  ...           21           21   \n",
+       "1         -73.959511         40.776134  ...           21           21   \n",
+       "2         -74.008301         40.736279  ...           21           21   \n",
+       "3         -74.012650         40.716217  ...           21           21   \n",
+       "4         -73.952919         40.780170  ...           21           21   \n",
+       "\n",
+       "  pickup_index_right  pickup_zone  pickup_LocationID  pickup_borough  \\\n",
+       "0                105     Gramercy                107       Manhattan   \n",
+       "1                105     Gramercy                107       Manhattan   \n",
+       "2                105     Gramercy                107       Manhattan   \n",
+       "3                105     Gramercy                107       Manhattan   \n",
+       "4                105     Gramercy                107       Manhattan   \n",
+       "\n",
+       "   dropoff_index_right                   dropoff_zone dropoff_LocationID  \\\n",
+       "0                179.0                     Park Slope              181.0   \n",
+       "1                234.0          Upper East Side North              236.0   \n",
+       "2                156.0  Meatpacking/West Village West              158.0   \n",
+       "3                229.0           TriBeCa/Civic Center              231.0   \n",
+       "4                261.0                 Yorkville West              263.0   \n",
+       "\n",
+       "   dropoff_borough  \n",
+       "0         Brooklyn  \n",
+       "1        Manhattan  \n",
+       "2        Manhattan  \n",
+       "3        Manhattan  \n",
+       "4        Manhattan  \n",
+       "\n",
+       "[5 rows x 25 columns]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#visualise first five entries of dataframe\n",
+    "\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#check for duplicates of longtitude-latitude pairs in analysis, if it is true or false\n",
+    "\n",
+    "df.duplicated(subset=['pickup_longitude','pickup_latitude']).values.any()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#check for any null values in data\n",
+    "\n",
+    "df.isna().values.any()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Since there are indeed duplicates and null values within our data, we will be removing it. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Before dropping NaNs and dupes\t:\tdf.shape = (387816, 25)\n",
+      "After dropping NaNs and dupes\t:\tdf.shape = (377250, 25)\n"
+     ]
+    }
+   ],
+   "source": [
+    "#checks for difference in shape of dataframe before dropping null values and duplicates\n",
+    "\n",
+    "print(f'Before dropping NaNs and dupes\\t:\\tdf.shape = {df.shape}')\n",
+    "\n",
+    "\n",
+    "#remove null values if boolean logic is true\n",
+    "df.dropna(inplace=True)\n",
+    "#remove duplicates if longitude and latituded values are duplicated \n",
+    "df.drop_duplicates(subset=['pickup_longitude','pickup_latitude'], keep='first', inplace=True)\n",
+    "\n",
+    "#prints statement to show shape of dataframe after dropping null and duplicates\n",
+    "print(f'After dropping NaNs and dupes\\t:\\tdf.shape = {df.shape}')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>id</th>\n",
+       "      <th>tpep_pickup_datetime</th>\n",
+       "      <th>tpep_dropoff_datetime</th>\n",
+       "      <th>passenger_count</th>\n",
+       "      <th>trip_distance</th>\n",
+       "      <th>pickup_longitude</th>\n",
+       "      <th>pickup_latitude</th>\n",
+       "      <th>dropoff_longitude</th>\n",
+       "      <th>dropoff_latitude</th>\n",
+       "      <th>...</th>\n",
+       "      <th>pickup_hour</th>\n",
+       "      <th>dropoff_hour</th>\n",
+       "      <th>pickup_index_right</th>\n",
+       "      <th>pickup_zone</th>\n",
+       "      <th>pickup_LocationID</th>\n",
+       "      <th>pickup_borough</th>\n",
+       "      <th>dropoff_index_right</th>\n",
+       "      <th>dropoff_zone</th>\n",
+       "      <th>dropoff_LocationID</th>\n",
+       "      <th>dropoff_borough</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5.22</td>\n",
+       "      <td>-73.981720</td>\n",
+       "      <td>40.736668</td>\n",
+       "      <td>-73.981636</td>\n",
+       "      <td>40.670242</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>179.0</td>\n",
+       "      <td>Park Slope</td>\n",
+       "      <td>181.0</td>\n",
+       "      <td>Brooklyn</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>50</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3.30</td>\n",
+       "      <td>-73.988739</td>\n",
+       "      <td>40.736511</td>\n",
+       "      <td>-73.959511</td>\n",
+       "      <td>40.776134</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>234.0</td>\n",
+       "      <td>Upper East Side North</td>\n",
+       "      <td>236.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>78</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.48</td>\n",
+       "      <td>-73.988640</td>\n",
+       "      <td>40.733940</td>\n",
+       "      <td>-74.008301</td>\n",
+       "      <td>40.736279</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>Meatpacking/West Village West</td>\n",
+       "      <td>158.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>83</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3.64</td>\n",
+       "      <td>-73.985786</td>\n",
+       "      <td>40.738289</td>\n",
+       "      <td>-74.012650</td>\n",
+       "      <td>40.716217</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>229.0</td>\n",
+       "      <td>TriBeCa/Civic Center</td>\n",
+       "      <td>231.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>109</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>5</td>\n",
+       "      <td>3.45</td>\n",
+       "      <td>-73.984528</td>\n",
+       "      <td>40.736660</td>\n",
+       "      <td>-73.952919</td>\n",
+       "      <td>40.780170</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>261.0</td>\n",
+       "      <td>Yorkville West</td>\n",
+       "      <td>263.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 25 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0   id tpep_pickup_datetime tpep_dropoff_datetime  \\\n",
+       "0           0    0             9/6/2016              9/6/2016   \n",
+       "1           1   50             9/6/2016              9/6/2016   \n",
+       "2           2   78             9/6/2016              9/6/2016   \n",
+       "3           3   83             9/6/2016              9/6/2016   \n",
+       "4           4  109             9/6/2016              9/6/2016   \n",
+       "\n",
+       "   passenger_count  trip_distance  pickup_longitude  pickup_latitude  \\\n",
+       "0                1           5.22        -73.981720        40.736668   \n",
+       "1                1           3.30        -73.988739        40.736511   \n",
+       "2                1           1.48        -73.988640        40.733940   \n",
+       "3                1           3.64        -73.985786        40.738289   \n",
+       "4                5           3.45        -73.984528        40.736660   \n",
+       "\n",
+       "   dropoff_longitude  dropoff_latitude  ...  pickup_hour dropoff_hour  \\\n",
+       "0         -73.981636         40.670242  ...           21           21   \n",
+       "1         -73.959511         40.776134  ...           21           21   \n",
+       "2         -74.008301         40.736279  ...           21           21   \n",
+       "3         -74.012650         40.716217  ...           21           21   \n",
+       "4         -73.952919         40.780170  ...           21           21   \n",
+       "\n",
+       "  pickup_index_right  pickup_zone  pickup_LocationID  pickup_borough  \\\n",
+       "0                105     Gramercy                107       Manhattan   \n",
+       "1                105     Gramercy                107       Manhattan   \n",
+       "2                105     Gramercy                107       Manhattan   \n",
+       "3                105     Gramercy                107       Manhattan   \n",
+       "4                105     Gramercy                107       Manhattan   \n",
+       "\n",
+       "   dropoff_index_right                   dropoff_zone dropoff_LocationID  \\\n",
+       "0                179.0                     Park Slope              181.0   \n",
+       "1                234.0          Upper East Side North              236.0   \n",
+       "2                156.0  Meatpacking/West Village West              158.0   \n",
+       "3                229.0           TriBeCa/Civic Center              231.0   \n",
+       "4                261.0                 Yorkville West              263.0   \n",
+       "\n",
+       "   dropoff_borough  \n",
+       "0         Brooklyn  \n",
+       "1        Manhattan  \n",
+       "2        Manhattan  \n",
+       "3        Manhattan  \n",
+       "4        Manhattan  \n",
+       "\n",
+       "[5 rows x 25 columns]"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checks on changes in dataframe\n",
+    "\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0                            Gramercy\n",
+       "1                            Gramercy\n",
+       "2                            Gramercy\n",
+       "3                            Gramercy\n",
+       "4                            Gramercy\n",
+       "                     ...             \n",
+       "387809                      Bronxdale\n",
+       "387810                       Rosedale\n",
+       "387812              Crotona Park East\n",
+       "387813              Crotona Park East\n",
+       "387815    Heartland Village/Todt Hill\n",
+       "Name: pickup_zone, Length: 377250, dtype: object"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#lists all elements in pickup zones\n",
+    "\n",
+    "df['pickup_zone']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['Gramercy', 'East Chelsea', 'Lincoln Square East', 'East Village',\n",
+       "       'Union Sq', 'Kips Bay', 'Midtown South', 'Lincoln Square West',\n",
+       "       'Murray Hill', 'Upper East Side South', 'Upper West Side South',\n",
+       "       'Greenwich Village South', 'Upper East Side North',\n",
+       "       'Lenox Hill West', 'Times Sq/Theatre District',\n",
+       "       'Battery Park City', 'West Village', 'Flatiron',\n",
+       "       'Penn Station/Madison Sq West', 'LaGuardia Airport',\n",
+       "       'Sutton Place/Turtle Bay North', 'Clinton East',\n",
+       "       'Garment District', 'Manhattan Valley', 'TriBeCa/Civic Center',\n",
+       "       'Greenwich Village North', 'Midtown Center', 'Yorkville West',\n",
+       "       'Midtown North', 'SoHo', 'Yorkville East', 'Seaport',\n",
+       "       'UN/Turtle Bay South', 'Lenox Hill East', 'Midtown East',\n",
+       "       'Meatpacking/West Village West', 'Upper West Side North',\n",
+       "       'Clinton West', 'West Chelsea/Hudson Yards', 'East Harlem North',\n",
+       "       'Chinatown', 'Little Italy/NoLiTa', 'Morningside Heights',\n",
+       "       'Downtown Brooklyn/MetroTech', 'Cobble Hill', 'World Trade Center',\n",
+       "       'Central Park', 'Fort Greene', 'East Harlem South',\n",
+       "       'Williamsburg (South Side)', 'Financial District North',\n",
+       "       'Battery Park', 'Williamsburg (North Side)', 'Alphabet City',\n",
+       "       'Lower East Side', 'Hudson Sq', 'JFK Airport', 'Brooklyn Heights',\n",
+       "       'Clinton Hill', 'Central Harlem', 'Prospect Heights',\n",
+       "       'Two Bridges/Seward Park', 'Astoria',\n",
+       "       'Stuy Town/Peter Cooper Village', 'DUMBO/Vinegar Hill', 'Steinway',\n",
+       "       'Financial District South', 'Park Slope', 'Carroll Gardens',\n",
+       "       'Long Island City/Hunters Point', 'Boerum Hill',\n",
+       "       'Central Harlem North', 'Sunnyside', 'Morrisania/Melrose',\n",
+       "       'Crown Heights North', 'Springfield Gardens South', 'Bloomingdale',\n",
+       "       'Inwood', 'Queensbridge/Ravenswood', 'Brooklyn Navy Yard',\n",
+       "       'East Williamsburg', 'Washington Heights South', 'Greenpoint',\n",
+       "       'Bedford', 'Manhattanville', 'Long Island City/Queens Plaza',\n",
+       "       'Bushwick South', 'South Jamaica', 'Bensonhurst West',\n",
+       "       'Hamilton Heights', 'Red Hook', 'Stuyvesant Heights', 'Elmhurst',\n",
+       "       'East Elmhurst', 'West Concourse', 'Jamaica', 'South Williamsburg',\n",
+       "       'Mott Haven/Port Morris', 'Forest Hills', 'Bushwick North',\n",
+       "       'Riverdale/North Riverdale/Fieldston', 'Woodside',\n",
+       "       'Jackson Heights', 'Old Astoria', 'Madison',\n",
+       "       'Prospect-Lefferts Gardens', 'Gowanus', 'Washington Heights North',\n",
+       "       'Roosevelt Island', 'Flatbush/Ditmas Park', 'Astoria Park',\n",
+       "       'Spuyten Duyvil/Kingsbridge', 'Randalls Island', 'Columbia Street',\n",
+       "       'Van Cortlandt Village', 'Elmhurst/Maspeth', 'Prospect Park',\n",
+       "       'Crown Heights South', 'Claremont/Bathgate', 'Sunset Park West',\n",
+       "       'Norwood', 'Kensington', 'Erasmus', 'Williamsbridge/Olinville',\n",
+       "       'Allerton/Pelham Gardens', 'East Flatbush/Farragut',\n",
+       "       'Windsor Terrace', 'Westchester Village/Unionport',\n",
+       "       'Briarwood/Jamaica Hills', 'Howard Beach', 'Bay Ridge', 'Belmont',\n",
+       "       'East Tremont', 'Highbridge', 'Ridgewood',\n",
+       "       'East Concourse/Concourse Village', 'East New York', 'Westerleigh',\n",
+       "       'Soundview/Castle Hill', 'Middle Village', 'Melrose South',\n",
+       "       'Baisley Park', 'Woodhaven', 'Borough Park',\n",
+       "       'East Flatbush/Remsen Village', 'Marine Park/Mill Basin',\n",
+       "       'Canarsie', 'Hillcrest/Pomonok', 'Parkchester',\n",
+       "       'Flushing Meadows-Corona Park', 'Ocean Parkway South', 'Longwood',\n",
+       "       'Ocean Hill', 'Maspeth', 'West Brighton', 'Corona', 'Midwood',\n",
+       "       'Kew Gardens', 'Queensboro Hill', 'Soundview/Bruckner',\n",
+       "       'Sunset Park East', 'University Heights/Morris Heights',\n",
+       "       'Queens Village', 'Whitestone', 'Hunts Point',\n",
+       "       'Kingsbridge Heights', 'Dyker Heights', 'Rego Park',\n",
+       "       'North Corona', 'Flushing', 'Highbridge Park', 'Willets Point',\n",
+       "       'Cypress Hills', 'South Ozone Park', 'Woodlawn/Wakefield',\n",
+       "       'Coney Island', 'Richmond Hill', 'Brownsville',\n",
+       "       \"Eltingville/Annadale/Prince's Bay\", 'Flatlands', 'Crotona Park',\n",
+       "       'Homecrest', 'Bronx Park', 'Glendale', 'Ozone Park',\n",
+       "       'Fordham South', 'Kew Gardens Hills', 'Murray Hill-Queens',\n",
+       "       'Pelham Bay Park', 'Brighton Beach', 'Fresh Meadows', 'Bayside',\n",
+       "       'Mount Hope', 'Saint Albans', 'Sheepshead Bay',\n",
+       "       'Van Nest/Morris Park', 'Inwood Hill Park',\n",
+       "       'Saint Michaels Cemetery/Woodside', 'Saint George/New Brighton',\n",
+       "       'East New York/Pennsylvania Avenue', 'Laurelton',\n",
+       "       'Schuylerville/Edgewater Park', 'Bath Beach',\n",
+       "       'Bloomfield/Emerson Hill', 'Bensonhurst East', 'Cambria Heights',\n",
+       "       'Marble Hill', 'Springfield Gardens North',\n",
+       "       'West Farms/Bronx River', 'Starrett City', 'Co-Op City',\n",
+       "       'Bronxdale', 'Rosedale', 'Crotona Park East',\n",
+       "       'Heartland Village/Todt Hill'], dtype='<U35')"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#removes duplicates in pickupzones\n",
+    "\n",
+    "newDFPU = df.drop_duplicates('pickup_zone')\n",
+    "\n",
+    "#converts to numpy array\n",
+    "\n",
+    "X = np.array(newDFPU['pickup_zone'], dtype='str')\n",
+    "\n",
+    "#prints X\n",
+    "\n",
+    "X"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['Park Slope', 'Upper East Side North',\n",
+       "       'Meatpacking/West Village West', 'TriBeCa/Civic Center',\n",
+       "       'Yorkville West', 'Lenox Hill East', 'Murray Hill', 'East Village',\n",
+       "       'Yorkville East', 'Flatiron', 'Clinton East',\n",
+       "       'Sutton Place/Turtle Bay North', 'Lincoln Square West',\n",
+       "       'Central Park', 'Alphabet City', 'Greenwich Village North',\n",
+       "       'East Harlem South', 'Midtown South', 'Upper East Side South',\n",
+       "       'Lenox Hill West', 'Union Sq', 'Greenwich Village South',\n",
+       "       'Garment District', 'Central Harlem', 'East Williamsburg',\n",
+       "       'Financial District South', 'Carroll Gardens',\n",
+       "       'Penn Station/Madison Sq West', 'JFK Airport', 'West Village',\n",
+       "       'Midtown Center', 'Two Bridges/Seward Park', 'East Chelsea',\n",
+       "       'UN/Turtle Bay South', 'Gramercy', 'Flushing',\n",
+       "       'Upper West Side North', 'Williamsburg (North Side)',\n",
+       "       'Stuy Town/Peter Cooper Village', 'Lower East Side',\n",
+       "       'Financial District North', 'Clinton West', 'Queensboro Hill',\n",
+       "       'Kips Bay', 'Times Sq/Theatre District', 'SoHo', 'Astoria',\n",
+       "       'Crown Heights North', 'Midtown East', 'Prospect Heights',\n",
+       "       'Hamilton Heights', 'Little Italy/NoLiTa', 'Rego Park',\n",
+       "       'Flatlands', 'Greenpoint', 'Clinton Hill', 'Battery Park City',\n",
+       "       'Bedford', 'Sunnyside', 'Manhattan Valley', 'Bay Ridge',\n",
+       "       'West Chelsea/Hudson Yards', 'East Harlem North',\n",
+       "       'Windsor Terrace', 'Midtown North', 'Williamsburg (South Side)',\n",
+       "       'Soundview/Castle Hill', 'Lincoln Square East',\n",
+       "       'Long Island City/Hunters Point', 'DUMBO/Vinegar Hill',\n",
+       "       'Long Island City/Queens Plaza', 'Boerum Hill',\n",
+       "       'Upper West Side South', 'Old Astoria', 'Steinway', 'Hudson Sq',\n",
+       "       'Fort Greene', 'Central Harlem North', 'World Trade Center',\n",
+       "       'Woodhaven', 'Mott Haven/Port Morris', 'Chinatown',\n",
+       "       'Riverdale/North Riverdale/Fieldston', 'Stuyvesant Heights',\n",
+       "       'Columbia Street', 'Brooklyn Heights', 'Elmhurst/Maspeth',\n",
+       "       'Jackson Heights', 'Woodlawn/Wakefield', 'Highbridge',\n",
+       "       'Cobble Hill', 'Erasmus', 'Inwood Hill Park', 'Seaport',\n",
+       "       'Parkchester', 'Kew Gardens Hills', 'Rossville/Woodrow',\n",
+       "       'East Flatbush/Farragut', 'Red Hook', 'Gowanus',\n",
+       "       'South Ozone Park', 'Prospect-Lefferts Gardens',\n",
+       "       'Flatbush/Ditmas Park', 'Schuylerville/Edgewater Park',\n",
+       "       'Downtown Brooklyn/MetroTech', 'Morningside Heights',\n",
+       "       'Crown Heights South', 'Dyker Heights', 'Bushwick South',\n",
+       "       'Washington Heights South', 'Bloomingdale', 'Sunset Park West',\n",
+       "       'Forest Hills', 'Hillcrest/Pomonok', 'Van Nest/Morris Park',\n",
+       "       'Bensonhurst West', 'Hunts Point', 'Manhattanville', 'Ridgewood',\n",
+       "       'Homecrest', 'Woodside', 'Inwood', 'Maspeth',\n",
+       "       'Van Cortlandt Village', 'Kensington', 'South Williamsburg',\n",
+       "       'Elmhurst', 'East Elmhurst', 'Bushwick North', 'Ocean Hill',\n",
+       "       'Oakland Gardens', 'North Corona', 'Glendale', 'Midwood',\n",
+       "       'Soundview/Bruckner', 'Saint Albans', 'Morrisania/Melrose',\n",
+       "       'Williamsbridge/Olinville', 'LaGuardia Airport', 'Mariners Harbor',\n",
+       "       'Corona', 'Washington Heights North', 'Melrose South', 'Jamaica',\n",
+       "       'Claremont/Bathgate', 'Queensbridge/Ravenswood', 'Bronx Park',\n",
+       "       'Briarwood/Jamaica Hills', 'Bellerose', 'Marine Park/Mill Basin',\n",
+       "       'Ozone Park', 'Sunset Park East', 'Jamaica Estates', 'Canarsie',\n",
+       "       'Howard Beach', 'East Concourse/Concourse Village', 'Madison',\n",
+       "       'Co-Op City', 'Bensonhurst East', 'Allerton/Pelham Gardens',\n",
+       "       'Oakwood', 'Battery Park', 'Bath Beach',\n",
+       "       'Springfield Gardens South', 'Baisley Park', 'Crotona Park East',\n",
+       "       'Springfield Gardens North', 'Middle Village',\n",
+       "       'Spuyten Duyvil/Kingsbridge', 'Pelham Bay', 'Prospect Park',\n",
+       "       'Coney Island', 'West Concourse', 'East Flatbush/Remsen Village',\n",
+       "       'Mount Hope', 'Bayside', 'Bloomfield/Emerson Hill',\n",
+       "       'Pelham Parkway', 'Laurelton', 'Brownsville',\n",
+       "       'Kingsbridge Heights', 'Kew Gardens', 'East Flushing',\n",
+       "       'Brooklyn Navy Yard', 'Crotona Park', 'Roosevelt Island',\n",
+       "       \"Eltingville/Annadale/Prince's Bay\",\n",
+       "       'Flushing Meadows-Corona Park', 'Sheepshead Bay', 'Richmond Hill',\n",
+       "       'Fresh Meadows', 'Arrochar/Fort Wadsworth', 'Rockaway Park',\n",
+       "       'Bedford Park', 'Norwood', 'Ocean Parkway South', 'Marble Hill',\n",
+       "       'Randalls Island', 'Astoria Park',\n",
+       "       'University Heights/Morris Heights', 'Bay Terrace/Fort Totten',\n",
+       "       'Borough Park', 'Brighton Beach', 'Gravesend', 'Whitestone',\n",
+       "       'Hammels/Arverne', 'East New York', 'Bronxdale',\n",
+       "       'Van Cortlandt Park', 'Great Kills', 'Douglaston',\n",
+       "       'Murray Hill-Queens', 'Hollis', 'Westerleigh', 'South Jamaica',\n",
+       "       'Stapleton', 'Highbridge Park', 'Saint Michaels Cemetery/Woodside',\n",
+       "       'Longwood', 'Green-Wood Cemetery', 'Fordham South',\n",
+       "       'Westchester Village/Unionport',\n",
+       "       'East New York/Pennsylvania Avenue', 'Queens Village',\n",
+       "       'Country Club', 'College Point', 'Manhattan Beach',\n",
+       "       'Heartland Village/Todt Hill', 'Cypress Hills', 'Belmont',\n",
+       "       'East Tremont', 'Glen Oaks', 'West Farms/Bronx River',\n",
+       "       'City Island', 'Breezy Point/Fort Tilden/Riis Beach',\n",
+       "       'South Beach/Dongan Hills', 'Grymes Hill/Clifton', 'Rosedale',\n",
+       "       'New Dorp/Midland Beach', 'Far Rockaway',\n",
+       "       'Saint George/New Brighton', 'Cambria Heights', 'Auburndale',\n",
+       "       'Starrett City', 'Eastchester', 'Forest Park/Highland Park',\n",
+       "       'Port Richmond', 'Arden Heights', 'West Brighton', 'Broad Channel',\n",
+       "       'Marine Park/Floyd Bennett Field', 'Willets Point',\n",
+       "       'Pelham Bay Park'], dtype='<U35')"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#removes duplicates in dropoff zones\n",
+    "\n",
+    "newDFDO = df.drop_duplicates('dropoff_zone')\n",
+    "\n",
+    "#converts to numpy array\n",
+    "\n",
+    "X2 = np.array(newDFDO['dropoff_zone'], dtype='str')\n",
+    "\n",
+    "#prints all dropoff zones\n",
+    "\n",
+    "X2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Total number of pickup zones = 215\n",
+      "Total number of dropoff zones = 253\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(f'Total number of pickup zones = {len(X)}')  #find out total number  of pickup zones\n",
+    "print(f'Total number of dropoff zones = {len(X2)}')  #find out total number  of dropoff zones"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "As 215 zones (both dropoff and pickup) are too much for the Sankey diagram to be represented with clarity, we will use boroughs as basis of analysis instead. In other words, the diagram may be too cluttered if all 215 subzones are represented on the diagram. As such, we chose to represent traffic flow via boroughs. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Processing borough data for Sankey Diagram"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0             Manhattan\n",
+       "1             Manhattan\n",
+       "2             Manhattan\n",
+       "3             Manhattan\n",
+       "4             Manhattan\n",
+       "              ...      \n",
+       "387809            Bronx\n",
+       "387810           Queens\n",
+       "387812            Bronx\n",
+       "387813            Bronx\n",
+       "387815    Staten Island\n",
+       "Name: pickup_borough, Length: 377250, dtype: object"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df['pickup_borough']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To ascertain the number of nodes required in Sankey, ascertain the list of boroughs for pickup and dropoff areas:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['Manhattan', 'Queens', 'Brooklyn', 'Bronx', 'Staten Island'],\n",
+       "      dtype='<U13')"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#removes duplicates in pickup boroughs\n",
+    "newDF = df.drop_duplicates('pickup_borough')\n",
+    "\n",
+    "#converts to numpy array\n",
+    "X = np.array(newDF['pickup_borough'], dtype='str')\n",
+    "\n",
+    "#prints all pickup boroughs\n",
+    "X"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['Brooklyn', 'Manhattan', 'Brooklyn', 'Bronx', 'Staten Island'],\n",
+       "      dtype='<U13')"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#removes duplicates in dropoff boroughs\n",
+    "newDF2 = df.drop_duplicates('dropoff_borough')\n",
+    "\n",
+    "#converts to numpy array\n",
+    "X2 = np.array(newDF['dropoff_borough'], dtype='str')\n",
+    "\n",
+    "#prints all pickup boroughs\n",
+    "X2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['Queens'], dtype='<U13')"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checks difference between pickup and dropoff zones\n",
+    "np.setdiff1d(X,X2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Given that both arrays have a difference in borough, 'Queens', we will account for that in our Sankey diagram."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>id</th>\n",
+       "      <th>tpep_pickup_datetime</th>\n",
+       "      <th>tpep_dropoff_datetime</th>\n",
+       "      <th>passenger_count</th>\n",
+       "      <th>trip_distance</th>\n",
+       "      <th>pickup_longitude</th>\n",
+       "      <th>pickup_latitude</th>\n",
+       "      <th>dropoff_longitude</th>\n",
+       "      <th>dropoff_latitude</th>\n",
+       "      <th>...</th>\n",
+       "      <th>pickup_hour</th>\n",
+       "      <th>dropoff_hour</th>\n",
+       "      <th>pickup_index_right</th>\n",
+       "      <th>pickup_zone</th>\n",
+       "      <th>pickup_LocationID</th>\n",
+       "      <th>pickup_borough</th>\n",
+       "      <th>dropoff_index_right</th>\n",
+       "      <th>dropoff_zone</th>\n",
+       "      <th>dropoff_LocationID</th>\n",
+       "      <th>dropoff_borough</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5.22</td>\n",
+       "      <td>-73.981720</td>\n",
+       "      <td>40.736668</td>\n",
+       "      <td>-73.981636</td>\n",
+       "      <td>40.670242</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>179.0</td>\n",
+       "      <td>Park Slope</td>\n",
+       "      <td>181.0</td>\n",
+       "      <td>Brooklyn</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>50</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3.30</td>\n",
+       "      <td>-73.988739</td>\n",
+       "      <td>40.736511</td>\n",
+       "      <td>-73.959511</td>\n",
+       "      <td>40.776134</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>234.0</td>\n",
+       "      <td>Upper East Side North</td>\n",
+       "      <td>236.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>78</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.48</td>\n",
+       "      <td>-73.988640</td>\n",
+       "      <td>40.733940</td>\n",
+       "      <td>-74.008301</td>\n",
+       "      <td>40.736279</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>Meatpacking/West Village West</td>\n",
+       "      <td>158.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>83</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3.64</td>\n",
+       "      <td>-73.985786</td>\n",
+       "      <td>40.738289</td>\n",
+       "      <td>-74.012650</td>\n",
+       "      <td>40.716217</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>229.0</td>\n",
+       "      <td>TriBeCa/Civic Center</td>\n",
+       "      <td>231.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>109</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>9/6/2016</td>\n",
+       "      <td>5</td>\n",
+       "      <td>3.45</td>\n",
+       "      <td>-73.984528</td>\n",
+       "      <td>40.736660</td>\n",
+       "      <td>-73.952919</td>\n",
+       "      <td>40.780170</td>\n",
+       "      <td>...</td>\n",
+       "      <td>21</td>\n",
+       "      <td>21</td>\n",
+       "      <td>105</td>\n",
+       "      <td>Gramercy</td>\n",
+       "      <td>107</td>\n",
+       "      <td>Manhattan</td>\n",
+       "      <td>261.0</td>\n",
+       "      <td>Yorkville West</td>\n",
+       "      <td>263.0</td>\n",
+       "      <td>Manhattan</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 25 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0   id tpep_pickup_datetime tpep_dropoff_datetime  \\\n",
+       "0           0    0             9/6/2016              9/6/2016   \n",
+       "1           1   50             9/6/2016              9/6/2016   \n",
+       "2           2   78             9/6/2016              9/6/2016   \n",
+       "3           3   83             9/6/2016              9/6/2016   \n",
+       "4           4  109             9/6/2016              9/6/2016   \n",
+       "\n",
+       "   passenger_count  trip_distance  pickup_longitude  pickup_latitude  \\\n",
+       "0                1           5.22        -73.981720        40.736668   \n",
+       "1                1           3.30        -73.988739        40.736511   \n",
+       "2                1           1.48        -73.988640        40.733940   \n",
+       "3                1           3.64        -73.985786        40.738289   \n",
+       "4                5           3.45        -73.984528        40.736660   \n",
+       "\n",
+       "   dropoff_longitude  dropoff_latitude  ...  pickup_hour dropoff_hour  \\\n",
+       "0         -73.981636         40.670242  ...           21           21   \n",
+       "1         -73.959511         40.776134  ...           21           21   \n",
+       "2         -74.008301         40.736279  ...           21           21   \n",
+       "3         -74.012650         40.716217  ...           21           21   \n",
+       "4         -73.952919         40.780170  ...           21           21   \n",
+       "\n",
+       "  pickup_index_right  pickup_zone  pickup_LocationID  pickup_borough  \\\n",
+       "0                105     Gramercy                107       Manhattan   \n",
+       "1                105     Gramercy                107       Manhattan   \n",
+       "2                105     Gramercy                107       Manhattan   \n",
+       "3                105     Gramercy                107       Manhattan   \n",
+       "4                105     Gramercy                107       Manhattan   \n",
+       "\n",
+       "   dropoff_index_right                   dropoff_zone dropoff_LocationID  \\\n",
+       "0                179.0                     Park Slope              181.0   \n",
+       "1                234.0          Upper East Side North              236.0   \n",
+       "2                156.0  Meatpacking/West Village West              158.0   \n",
+       "3                229.0           TriBeCa/Civic Center              231.0   \n",
+       "4                261.0                 Yorkville West              263.0   \n",
+       "\n",
+       "   dropoff_borough  \n",
+       "0         Brooklyn  \n",
+       "1        Manhattan  \n",
+       "2        Manhattan  \n",
+       "3        Manhattan  \n",
+       "4        Manhattan  \n",
+       "\n",
+       "[5 rows x 25 columns]"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#visualise data again\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "      <th>count</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>pickup_borough</th>\n",
+       "      <th>dropoff_borough</th>\n",
+       "      <th></th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th rowspan=\"4\" valign=\"top\">Bronx</th>\n",
+       "      <th>Bronx</th>\n",
+       "      <td>136</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Brooklyn</th>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Manhattan</th>\n",
+       "      <td>69</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Queens</th>\n",
+       "      <td>16</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th rowspan=\"5\" valign=\"top\">Brooklyn</th>\n",
+       "      <th>Bronx</th>\n",
+       "      <td>13</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Brooklyn</th>\n",
+       "      <td>4168</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Manhattan</th>\n",
+       "      <td>1821</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Queens</th>\n",
+       "      <td>404</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Staten Island</th>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th rowspan=\"5\" valign=\"top\">Manhattan</th>\n",
+       "      <th>Bronx</th>\n",
+       "      <td>1581</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Brooklyn</th>\n",
+       "      <td>12351</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Manhattan</th>\n",
+       "      <td>320576</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Queens</th>\n",
+       "      <td>15245</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Staten Island</th>\n",
+       "      <td>74</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th rowspan=\"5\" valign=\"top\">Queens</th>\n",
+       "      <th>Bronx</th>\n",
+       "      <td>306</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Brooklyn</th>\n",
+       "      <td>2720</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Manhattan</th>\n",
+       "      <td>12623</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Queens</th>\n",
+       "      <td>5113</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Staten Island</th>\n",
+       "      <td>19</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th rowspan=\"2\" valign=\"top\">Staten Island</th>\n",
+       "      <th>Brooklyn</th>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Staten Island</th>\n",
+       "      <td>7</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                 count\n",
+       "pickup_borough dropoff_borough        \n",
+       "Bronx          Bronx               136\n",
+       "               Brooklyn              2\n",
+       "               Manhattan            69\n",
+       "               Queens               16\n",
+       "Brooklyn       Bronx                13\n",
+       "               Brooklyn           4168\n",
+       "               Manhattan          1821\n",
+       "               Queens              404\n",
+       "               Staten Island         5\n",
+       "Manhattan      Bronx              1581\n",
+       "               Brooklyn          12351\n",
+       "               Manhattan        320576\n",
+       "               Queens            15245\n",
+       "               Staten Island        74\n",
+       "Queens         Bronx               306\n",
+       "               Brooklyn           2720\n",
+       "               Manhattan         12623\n",
+       "               Queens             5113\n",
+       "               Staten Island        19\n",
+       "Staten Island  Brooklyn              1\n",
+       "               Staten Island         7"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#group data according to pickup borough and dropoff borough, and count the number of entries which travel from one area to another\n",
+    "pickupflow = df.groupby(['pickup_borough', 'dropoff_borough']).agg(['count'])\n",
+    "#since all counts are the same, display by id value to show total counts\n",
+    "pickupflow['id']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[136, 2, 69, 16, 13, 4168, 1821, 404, 5, 1581, 12351, 320576, 15245, 74, 306, 2720, 12623, 5113, 19, 1, 7]\n"
+     ]
+    }
+   ],
+   "source": [
+    "#flatten the numpy array to make it horizontal \n",
+    "a = pickupflow['id'].to_numpy().flatten()\n",
+    "#converts array to list\n",
+    "value1 = list(a)\n",
+    "#prints list\n",
+    "print(value1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#to input values into the Sankey diagram, we will need to represent each borough with care. 0-4 represents pickup boroughs, 5-9 represents dropoff. \n",
+    "*Pickup point node representation legend*:\n",
+    "0'Bronx', \n",
+    "1'Brooklyn', \n",
+    "2'Manhattan', \n",
+    "3'Queens', \n",
+    "4'Staten Island'\n",
+    "\n",
+    "*Dropoff point node representation legend*:\n",
+    "5'Bronx', \n",
+    "6'Brooklyn', \n",
+    "7'Manhattan', \n",
+    "8'Queens', \n",
+    "9'Staten Island'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#creates matrix to account for all flows between pickup and dropoff points\n",
+    "label = ['Bronx', 'Brooklyn', 'Manhattan', 'Queens', 'Staten Island', 'Bronx', 'Brooklyn', 'Manhattan', 'Queens', 'Staten Island']\n",
+    "#source reflects left hand side of Sankey diagram, where each flow is from\n",
+    "source = [0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4]\n",
+    "#target reflects right hand side, where each flow is directed to\n",
+    "target = [5,6,7,8,5,6,7,8,9,5,6,7,8,9,5,6,7,8,9,6,9]\n",
+    "#input value as number of trips (counts) between each borough\n",
+    "value = value1\n",
+    "\n",
+    "#link data to dict, dict to sankey\n",
+    "link = dict(source = source, target = target, value = value)\n",
+    "node = dict(label = label, pad=35, thickness=10)\n",
+    "data = go.Sankey(link = link, node=node)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.plotly.v1+json": {
+       "config": {
+        "plotlyServerURL": "https://plot.ly"
+       },
+       "data": [
+        {
+         "link": {
+          "source": [
+           0,
+           0,
+           0,
+           0,
+           1,
+           1,
+           1,
+           1,
+           1,
+           2,
+           2,
+           2,
+           2,
+           2,
+           3,
+           3,
+           3,
+           3,
+           3,
+           4,
+           4
+          ],
+          "target": [
+           5,
+           6,
+           7,
+           8,
+           5,
+           6,
+           7,
+           8,
+           9,
+           5,
+           6,
+           7,
+           8,
+           9,
+           5,
+           6,
+           7,
+           8,
+           9,
+           6,
+           9
+          ],
+          "value": [
+           136,
+           2,
+           69,
+           16,
+           13,
+           4168,
+           1821,
+           404,
+           5,
+           1581,
+           12351,
+           320576,
+           15245,
+           74,
+           306,
+           2720,
+           12623,
+           5113,
+           19,
+           1,
+           7
+          ]
+         },
+         "node": {
+          "label": [
+           "Bronx",
+           "Brooklyn",
+           "Manhattan",
+           "Queens",
+           "Staten Island",
+           "Bronx",
+           "Brooklyn",
+           "Manhattan",
+           "Queens",
+           "Staten Island"
+          ],
+          "pad": 35,
+          "thickness": 10
+         },
+         "type": "sankey"
+        }
+       ],
+       "layout": {
+        "hovermode": "x",
+        "template": {
+         "data": {
+          "bar": [
+           {
+            "error_x": {
+             "color": "#2a3f5f"
+            },
+            "error_y": {
+             "color": "#2a3f5f"
+            },
+            "marker": {
+             "line": {
+              "color": "#E5ECF6",
+              "width": 0.5
+             }
+            },
+            "type": "bar"
+           }
+          ],
+          "barpolar": [
+           {
+            "marker": {
+             "line": {
+              "color": "#E5ECF6",
+              "width": 0.5
+             }
+            },
+            "type": "barpolar"
+           }
+          ],
+          "carpet": [
+           {
+            "aaxis": {
+             "endlinecolor": "#2a3f5f",
+             "gridcolor": "white",
+             "linecolor": "white",
+             "minorgridcolor": "white",
+             "startlinecolor": "#2a3f5f"
+            },
+            "baxis": {
+             "endlinecolor": "#2a3f5f",
+             "gridcolor": "white",
+             "linecolor": "white",
+             "minorgridcolor": "white",
+             "startlinecolor": "#2a3f5f"
+            },
+            "type": "carpet"
+           }
+          ],
+          "choropleth": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "type": "choropleth"
+           }
+          ],
+          "contour": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "colorscale": [
+             [
+              0,
+              "#0d0887"
+             ],
+             [
+              0.1111111111111111,
+              "#46039f"
+             ],
+             [
+              0.2222222222222222,
+              "#7201a8"
+             ],
+             [
+              0.3333333333333333,
+              "#9c179e"
+             ],
+             [
+              0.4444444444444444,
+              "#bd3786"
+             ],
+             [
+              0.5555555555555556,
+              "#d8576b"
+             ],
+             [
+              0.6666666666666666,
+              "#ed7953"
+             ],
+             [
+              0.7777777777777778,
+              "#fb9f3a"
+             ],
+             [
+              0.8888888888888888,
+              "#fdca26"
+             ],
+             [
+              1,
+              "#f0f921"
+             ]
+            ],
+            "type": "contour"
+           }
+          ],
+          "contourcarpet": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "type": "contourcarpet"
+           }
+          ],
+          "heatmap": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "colorscale": [
+             [
+              0,
+              "#0d0887"
+             ],
+             [
+              0.1111111111111111,
+              "#46039f"
+             ],
+             [
+              0.2222222222222222,
+              "#7201a8"
+             ],
+             [
+              0.3333333333333333,
+              "#9c179e"
+             ],
+             [
+              0.4444444444444444,
+              "#bd3786"
+             ],
+             [
+              0.5555555555555556,
+              "#d8576b"
+             ],
+             [
+              0.6666666666666666,
+              "#ed7953"
+             ],
+             [
+              0.7777777777777778,
+              "#fb9f3a"
+             ],
+             [
+              0.8888888888888888,
+              "#fdca26"
+             ],
+             [
+              1,
+              "#f0f921"
+             ]
+            ],
+            "type": "heatmap"
+           }
+          ],
+          "heatmapgl": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "colorscale": [
+             [
+              0,
+              "#0d0887"
+             ],
+             [
+              0.1111111111111111,
+              "#46039f"
+             ],
+             [
+              0.2222222222222222,
+              "#7201a8"
+             ],
+             [
+              0.3333333333333333,
+              "#9c179e"
+             ],
+             [
+              0.4444444444444444,
+              "#bd3786"
+             ],
+             [
+              0.5555555555555556,
+              "#d8576b"
+             ],
+             [
+              0.6666666666666666,
+              "#ed7953"
+             ],
+             [
+              0.7777777777777778,
+              "#fb9f3a"
+             ],
+             [
+              0.8888888888888888,
+              "#fdca26"
+             ],
+             [
+              1,
+              "#f0f921"
+             ]
+            ],
+            "type": "heatmapgl"
+           }
+          ],
+          "histogram": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "histogram"
+           }
+          ],
+          "histogram2d": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "colorscale": [
+             [
+              0,
+              "#0d0887"
+             ],
+             [
+              0.1111111111111111,
+              "#46039f"
+             ],
+             [
+              0.2222222222222222,
+              "#7201a8"
+             ],
+             [
+              0.3333333333333333,
+              "#9c179e"
+             ],
+             [
+              0.4444444444444444,
+              "#bd3786"
+             ],
+             [
+              0.5555555555555556,
+              "#d8576b"
+             ],
+             [
+              0.6666666666666666,
+              "#ed7953"
+             ],
+             [
+              0.7777777777777778,
+              "#fb9f3a"
+             ],
+             [
+              0.8888888888888888,
+              "#fdca26"
+             ],
+             [
+              1,
+              "#f0f921"
+             ]
+            ],
+            "type": "histogram2d"
+           }
+          ],
+          "histogram2dcontour": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "colorscale": [
+             [
+              0,
+              "#0d0887"
+             ],
+             [
+              0.1111111111111111,
+              "#46039f"
+             ],
+             [
+              0.2222222222222222,
+              "#7201a8"
+             ],
+             [
+              0.3333333333333333,
+              "#9c179e"
+             ],
+             [
+              0.4444444444444444,
+              "#bd3786"
+             ],
+             [
+              0.5555555555555556,
+              "#d8576b"
+             ],
+             [
+              0.6666666666666666,
+              "#ed7953"
+             ],
+             [
+              0.7777777777777778,
+              "#fb9f3a"
+             ],
+             [
+              0.8888888888888888,
+              "#fdca26"
+             ],
+             [
+              1,
+              "#f0f921"
+             ]
+            ],
+            "type": "histogram2dcontour"
+           }
+          ],
+          "mesh3d": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "type": "mesh3d"
+           }
+          ],
+          "parcoords": [
+           {
+            "line": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "parcoords"
+           }
+          ],
+          "pie": [
+           {
+            "automargin": true,
+            "type": "pie"
+           }
+          ],
+          "scatter": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scatter"
+           }
+          ],
+          "scatter3d": [
+           {
+            "line": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scatter3d"
+           }
+          ],
+          "scattercarpet": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scattercarpet"
+           }
+          ],
+          "scattergeo": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scattergeo"
+           }
+          ],
+          "scattergl": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scattergl"
+           }
+          ],
+          "scattermapbox": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scattermapbox"
+           }
+          ],
+          "scatterpolar": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scatterpolar"
+           }
+          ],
+          "scatterpolargl": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scatterpolargl"
+           }
+          ],
+          "scatterternary": [
+           {
+            "marker": {
+             "colorbar": {
+              "outlinewidth": 0,
+              "ticks": ""
+             }
+            },
+            "type": "scatterternary"
+           }
+          ],
+          "surface": [
+           {
+            "colorbar": {
+             "outlinewidth": 0,
+             "ticks": ""
+            },
+            "colorscale": [
+             [
+              0,
+              "#0d0887"
+             ],
+             [
+              0.1111111111111111,
+              "#46039f"
+             ],
+             [
+              0.2222222222222222,
+              "#7201a8"
+             ],
+             [
+              0.3333333333333333,
+              "#9c179e"
+             ],
+             [
+              0.4444444444444444,
+              "#bd3786"
+             ],
+             [
+              0.5555555555555556,
+              "#d8576b"
+             ],
+             [
+              0.6666666666666666,
+              "#ed7953"
+             ],
+             [
+              0.7777777777777778,
+              "#fb9f3a"
+             ],
+             [
+              0.8888888888888888,
+              "#fdca26"
+             ],
+             [
+              1,
+              "#f0f921"
+             ]
+            ],
+            "type": "surface"
+           }
+          ],
+          "table": [
+           {
+            "cells": {
+             "fill": {
+              "color": "#EBF0F8"
+             },
+             "line": {
+              "color": "white"
+             }
+            },
+            "header": {
+             "fill": {
+              "color": "#C8D4E3"
+             },
+             "line": {
+              "color": "white"
+             }
+            },
+            "type": "table"
+           }
+          ]
+         },
+         "layout": {
+          "annotationdefaults": {
+           "arrowcolor": "#2a3f5f",
+           "arrowhead": 0,
+           "arrowwidth": 1
+          },
+          "autotypenumbers": "strict",
+          "coloraxis": {
+           "colorbar": {
+            "outlinewidth": 0,
+            "ticks": ""
+           }
+          },
+          "colorscale": {
+           "diverging": [
+            [
+             0,
+             "#8e0152"
+            ],
+            [
+             0.1,
+             "#c51b7d"
+            ],
+            [
+             0.2,
+             "#de77ae"
+            ],
+            [
+             0.3,
+             "#f1b6da"
+            ],
+            [
+             0.4,
+             "#fde0ef"
+            ],
+            [
+             0.5,
+             "#f7f7f7"
+            ],
+            [
+             0.6,
+             "#e6f5d0"
+            ],
+            [
+             0.7,
+             "#b8e186"
+            ],
+            [
+             0.8,
+             "#7fbc41"
+            ],
+            [
+             0.9,
+             "#4d9221"
+            ],
+            [
+             1,
+             "#276419"
+            ]
+           ],
+           "sequential": [
+            [
+             0,
+             "#0d0887"
+            ],
+            [
+             0.1111111111111111,
+             "#46039f"
+            ],
+            [
+             0.2222222222222222,
+             "#7201a8"
+            ],
+            [
+             0.3333333333333333,
+             "#9c179e"
+            ],
+            [
+             0.4444444444444444,
+             "#bd3786"
+            ],
+            [
+             0.5555555555555556,
+             "#d8576b"
+            ],
+            [
+             0.6666666666666666,
+             "#ed7953"
+            ],
+            [
+             0.7777777777777778,
+             "#fb9f3a"
+            ],
+            [
+             0.8888888888888888,
+             "#fdca26"
+            ],
+            [
+             1,
+             "#f0f921"
+            ]
+           ],
+           "sequentialminus": [
+            [
+             0,
+             "#0d0887"
+            ],
+            [
+             0.1111111111111111,
+             "#46039f"
+            ],
+            [
+             0.2222222222222222,
+             "#7201a8"
+            ],
+            [
+             0.3333333333333333,
+             "#9c179e"
+            ],
+            [
+             0.4444444444444444,
+             "#bd3786"
+            ],
+            [
+             0.5555555555555556,
+             "#d8576b"
+            ],
+            [
+             0.6666666666666666,
+             "#ed7953"
+            ],
+            [
+             0.7777777777777778,
+             "#fb9f3a"
+            ],
+            [
+             0.8888888888888888,
+             "#fdca26"
+            ],
+            [
+             1,
+             "#f0f921"
+            ]
+           ]
+          },
+          "colorway": [
+           "#636efa",
+           "#EF553B",
+           "#00cc96",
+           "#ab63fa",
+           "#FFA15A",
+           "#19d3f3",
+           "#FF6692",
+           "#B6E880",
+           "#FF97FF",
+           "#FECB52"
+          ],
+          "font": {
+           "color": "#2a3f5f"
+          },
+          "geo": {
+           "bgcolor": "white",
+           "lakecolor": "white",
+           "landcolor": "#E5ECF6",
+           "showlakes": true,
+           "showland": true,
+           "subunitcolor": "white"
+          },
+          "hoverlabel": {
+           "align": "left"
+          },
+          "hovermode": "closest",
+          "mapbox": {
+           "style": "light"
+          },
+          "paper_bgcolor": "white",
+          "plot_bgcolor": "#E5ECF6",
+          "polar": {
+           "angularaxis": {
+            "gridcolor": "white",
+            "linecolor": "white",
+            "ticks": ""
+           },
+           "bgcolor": "#E5ECF6",
+           "radialaxis": {
+            "gridcolor": "white",
+            "linecolor": "white",
+            "ticks": ""
+           }
+          },
+          "scene": {
+           "xaxis": {
+            "backgroundcolor": "#E5ECF6",
+            "gridcolor": "white",
+            "gridwidth": 2,
+            "linecolor": "white",
+            "showbackground": true,
+            "ticks": "",
+            "zerolinecolor": "white"
+           },
+           "yaxis": {
+            "backgroundcolor": "#E5ECF6",
+            "gridcolor": "white",
+            "gridwidth": 2,
+            "linecolor": "white",
+            "showbackground": true,
+            "ticks": "",
+            "zerolinecolor": "white"
+           },
+           "zaxis": {
+            "backgroundcolor": "#E5ECF6",
+            "gridcolor": "white",
+            "gridwidth": 2,
+            "linecolor": "white",
+            "showbackground": true,
+            "ticks": "",
+            "zerolinecolor": "white"
+           }
+          },
+          "shapedefaults": {
+           "line": {
+            "color": "#2a3f5f"
+           }
+          },
+          "ternary": {
+           "aaxis": {
+            "gridcolor": "white",
+            "linecolor": "white",
+            "ticks": ""
+           },
+           "baxis": {
+            "gridcolor": "white",
+            "linecolor": "white",
+            "ticks": ""
+           },
+           "bgcolor": "#E5ECF6",
+           "caxis": {
+            "gridcolor": "white",
+            "linecolor": "white",
+            "ticks": ""
+           }
+          },
+          "title": {
+           "x": 0.05
+          },
+          "xaxis": {
+           "automargin": true,
+           "gridcolor": "white",
+           "linecolor": "white",
+           "ticks": "",
+           "title": {
+            "standoff": 15
+           },
+           "zerolinecolor": "white",
+           "zerolinewidth": 2
+          },
+          "yaxis": {
+           "automargin": true,
+           "gridcolor": "white",
+           "linecolor": "white",
+           "ticks": "",
+           "title": {
+            "standoff": 15
+           },
+           "zerolinecolor": "white",
+           "zerolinewidth": 2
+          }
+         }
+        },
+        "title": {
+         "text": "Flow of Yellow taxi cabs between Boroughs"
+        }
+       }
+      },
+      "text/html": [
+       "<div>                            <div id=\"b6ff33ec-1ccc-4458-9104-795b3fd0cfdf\" class=\"plotly-graph-div\" style=\"height:525px; width:100%;\"></div>            <script type=\"text/javascript\">                require([\"plotly\"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById(\"b6ff33ec-1ccc-4458-9104-795b3fd0cfdf\")) {                    Plotly.newPlot(                        \"b6ff33ec-1ccc-4458-9104-795b3fd0cfdf\",                        [{\"link\": {\"source\": [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4], \"target\": [5, 6, 7, 8, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 9], \"value\": [136, 2, 69, 16, 13, 4168, 1821, 404, 5, 1581, 12351, 320576, 15245, 74, 306, 2720, 12623, 5113, 19, 1, 7]}, \"node\": {\"label\": [\"Bronx\", \"Brooklyn\", \"Manhattan\", \"Queens\", \"Staten Island\", \"Bronx\", \"Brooklyn\", \"Manhattan\", \"Queens\", \"Staten Island\"], \"pad\": 35, \"thickness\": 10}, \"type\": \"sankey\"}],                        {\"hovermode\": \"x\", \"template\": {\"data\": {\"bar\": [{\"error_x\": {\"color\": \"#2a3f5f\"}, \"error_y\": {\"color\": \"#2a3f5f\"}, \"marker\": {\"line\": {\"color\": \"#E5ECF6\", \"width\": 0.5}}, \"type\": \"bar\"}], \"barpolar\": [{\"marker\": {\"line\": {\"color\": \"#E5ECF6\", \"width\": 0.5}}, \"type\": \"barpolar\"}], \"carpet\": [{\"aaxis\": {\"endlinecolor\": \"#2a3f5f\", \"gridcolor\": \"white\", \"linecolor\": \"white\", \"minorgridcolor\": \"white\", \"startlinecolor\": \"#2a3f5f\"}, \"baxis\": {\"endlinecolor\": \"#2a3f5f\", \"gridcolor\": \"white\", \"linecolor\": \"white\", \"minorgridcolor\": \"white\", \"startlinecolor\": \"#2a3f5f\"}, \"type\": \"carpet\"}], \"choropleth\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"type\": \"choropleth\"}], \"contour\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"colorscale\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"type\": \"contour\"}], \"contourcarpet\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"type\": \"contourcarpet\"}], \"heatmap\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"colorscale\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"type\": \"heatmap\"}], \"heatmapgl\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"colorscale\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"type\": \"heatmapgl\"}], \"histogram\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"histogram\"}], \"histogram2d\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"colorscale\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"type\": \"histogram2d\"}], \"histogram2dcontour\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"colorscale\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"type\": \"histogram2dcontour\"}], \"mesh3d\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"type\": \"mesh3d\"}], \"parcoords\": [{\"line\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"parcoords\"}], \"pie\": [{\"automargin\": true, \"type\": \"pie\"}], \"scatter\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scatter\"}], \"scatter3d\": [{\"line\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scatter3d\"}], \"scattercarpet\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scattercarpet\"}], \"scattergeo\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scattergeo\"}], \"scattergl\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scattergl\"}], \"scattermapbox\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scattermapbox\"}], \"scatterpolar\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scatterpolar\"}], \"scatterpolargl\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scatterpolargl\"}], \"scatterternary\": [{\"marker\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"type\": \"scatterternary\"}], \"surface\": [{\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}, \"colorscale\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"type\": \"surface\"}], \"table\": [{\"cells\": {\"fill\": {\"color\": \"#EBF0F8\"}, \"line\": {\"color\": \"white\"}}, \"header\": {\"fill\": {\"color\": \"#C8D4E3\"}, \"line\": {\"color\": \"white\"}}, \"type\": \"table\"}]}, \"layout\": {\"annotationdefaults\": {\"arrowcolor\": \"#2a3f5f\", \"arrowhead\": 0, \"arrowwidth\": 1}, \"autotypenumbers\": \"strict\", \"coloraxis\": {\"colorbar\": {\"outlinewidth\": 0, \"ticks\": \"\"}}, \"colorscale\": {\"diverging\": [[0, \"#8e0152\"], [0.1, \"#c51b7d\"], [0.2, \"#de77ae\"], [0.3, \"#f1b6da\"], [0.4, \"#fde0ef\"], [0.5, \"#f7f7f7\"], [0.6, \"#e6f5d0\"], [0.7, \"#b8e186\"], [0.8, \"#7fbc41\"], [0.9, \"#4d9221\"], [1, \"#276419\"]], \"sequential\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]], \"sequentialminus\": [[0.0, \"#0d0887\"], [0.1111111111111111, \"#46039f\"], [0.2222222222222222, \"#7201a8\"], [0.3333333333333333, \"#9c179e\"], [0.4444444444444444, \"#bd3786\"], [0.5555555555555556, \"#d8576b\"], [0.6666666666666666, \"#ed7953\"], [0.7777777777777778, \"#fb9f3a\"], [0.8888888888888888, \"#fdca26\"], [1.0, \"#f0f921\"]]}, \"colorway\": [\"#636efa\", \"#EF553B\", \"#00cc96\", \"#ab63fa\", \"#FFA15A\", \"#19d3f3\", \"#FF6692\", \"#B6E880\", \"#FF97FF\", \"#FECB52\"], \"font\": {\"color\": \"#2a3f5f\"}, \"geo\": {\"bgcolor\": \"white\", \"lakecolor\": \"white\", \"landcolor\": \"#E5ECF6\", \"showlakes\": true, \"showland\": true, \"subunitcolor\": \"white\"}, \"hoverlabel\": {\"align\": \"left\"}, \"hovermode\": \"closest\", \"mapbox\": {\"style\": \"light\"}, \"paper_bgcolor\": \"white\", \"plot_bgcolor\": \"#E5ECF6\", \"polar\": {\"angularaxis\": {\"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\"}, \"bgcolor\": \"#E5ECF6\", \"radialaxis\": {\"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\"}}, \"scene\": {\"xaxis\": {\"backgroundcolor\": \"#E5ECF6\", \"gridcolor\": \"white\", \"gridwidth\": 2, \"linecolor\": \"white\", \"showbackground\": true, \"ticks\": \"\", \"zerolinecolor\": \"white\"}, \"yaxis\": {\"backgroundcolor\": \"#E5ECF6\", \"gridcolor\": \"white\", \"gridwidth\": 2, \"linecolor\": \"white\", \"showbackground\": true, \"ticks\": \"\", \"zerolinecolor\": \"white\"}, \"zaxis\": {\"backgroundcolor\": \"#E5ECF6\", \"gridcolor\": \"white\", \"gridwidth\": 2, \"linecolor\": \"white\", \"showbackground\": true, \"ticks\": \"\", \"zerolinecolor\": \"white\"}}, \"shapedefaults\": {\"line\": {\"color\": \"#2a3f5f\"}}, \"ternary\": {\"aaxis\": {\"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\"}, \"baxis\": {\"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\"}, \"bgcolor\": \"#E5ECF6\", \"caxis\": {\"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\"}}, \"title\": {\"x\": 0.05}, \"xaxis\": {\"automargin\": true, \"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\", \"title\": {\"standoff\": 15}, \"zerolinecolor\": \"white\", \"zerolinewidth\": 2}, \"yaxis\": {\"automargin\": true, \"gridcolor\": \"white\", \"linecolor\": \"white\", \"ticks\": \"\", \"title\": {\"standoff\": 15}, \"zerolinecolor\": \"white\", \"zerolinewidth\": 2}}}, \"title\": {\"text\": \"Flow of Yellow taxi cabs between Boroughs\"}},                        {\"responsive\": true}                    ).then(function(){\n",
+       "                            \n",
+       "var gd = document.getElementById('b6ff33ec-1ccc-4458-9104-795b3fd0cfdf');\n",
+       "var x = new MutationObserver(function (mutations, observer) {{\n",
+       "        var display = window.getComputedStyle(gd).display;\n",
+       "        if (!display || display === 'none') {{\n",
+       "            console.log([gd, 'removed!']);\n",
+       "            Plotly.purge(gd);\n",
+       "            observer.disconnect();\n",
+       "        }}\n",
+       "}});\n",
+       "\n",
+       "// Listen for the removal of the full notebook cells\n",
+       "var notebookContainer = gd.closest('#notebook-container');\n",
+       "if (notebookContainer) {{\n",
+       "    x.observe(notebookContainer, {childList: true});\n",
+       "}}\n",
+       "\n",
+       "// Listen for the clearing of the current output cell\n",
+       "var outputEl = gd.closest('.output');\n",
+       "if (outputEl) {{\n",
+       "    x.observe(outputEl, {childList: true});\n",
+       "}}\n",
+       "\n",
+       "                        })                };                });            </script>        </div>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "#graph the Sankey\n",
+    "\n",
+    "fig = go.Figure(data)\n",
+    "\n",
+    "#features of layout is updated\n",
+    "fig.update_layout(\n",
+    "    hovermode= \"x\",\n",
+    "    title = \"Flow of Yellow taxi cabs between Boroughs\"\n",
+    "    )\n",
+    "\n",
+    "#show figure\n",
+    "fig.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#exports file to designated folder under downloads\n",
+    "fig.write_html(\"C:/Users/seren/Downloads/Spatial Programming Project/SankeyDiagram.html\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
